@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 function RegistroProductos() {
-  const [producto, setProducto] = useState({ nombre: "", precio: "" });
+  const [producto, setProducto] = useState({ nombre: "", precio: "", cantidad: "" });
   const [productos, setProductos] = useState(() => {
     const guardados = localStorage.getItem("productos");
     return guardados ? JSON.parse(guardados) : [];
   });
-
-  useEffect(() => {
-    localStorage.setItem("productos", JSON.stringify(productos));
-  }, [productos]);
 
   const handleChange = (e) => {
     setProducto({ ...producto, [e.target.name]: e.target.value });
@@ -17,13 +13,36 @@ function RegistroProductos() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Validación extra: que el precio sea mayor a 0
-    if (!producto.nombre || !producto.precio || producto.precio <= 0) {
-      alert("Completa todos los campos y asegúrate de que el precio sea mayor a 0");
+    if (!producto.nombre || !producto.precio || !producto.cantidad) {
+      alert("Por favor, completa todos los campos.");
       return;
     }
-    setProductos([...productos, producto]);
-    setProducto({ nombre: "", precio: "" });
+    if (producto.precio <= 0 || producto.cantidad <= 0) {
+      alert("El precio y la cantidad deben ser mayores a 0.");
+      return;
+    }
+
+    // 1. Guardar el producto en la lista de productos
+    const nuevosProductos = [...productos, producto];
+    setProductos(nuevosProductos);
+    localStorage.setItem("productos", JSON.stringify(nuevosProductos));
+
+    // 2. Sincronizar con el Inventario
+    const inventarioActual = JSON.parse(localStorage.getItem("inventario")) || [];
+    const productoExistente = inventarioActual.find(p => p.nombre.toLowerCase() === producto.nombre.toLowerCase());
+
+    if (productoExistente) {
+      // Si ya existe, sumamos la cantidad
+      productoExistente.existencia += parseInt(producto.cantidad);
+    } else {
+      // Si es nuevo, lo agregamos al inventario
+      inventarioActual.push({ nombre: producto.nombre, existencia: parseInt(producto.cantidad) });
+    }
+    localStorage.setItem("inventario", JSON.stringify(inventarioActual));
+
+    // Limpiar formulario
+    setProducto({ nombre: "", precio: "", cantidad: "" });
+    alert("¡Producto registrado y añadido al inventario con éxito!");
   };
 
   return (
@@ -40,12 +59,20 @@ function RegistroProductos() {
         <input
           type="number"
           name="precio"
-          placeholder="Precio"
+          placeholder="Precio ($)"
           value={producto.precio}
+          onChange={handleChange}
+        />
+        <input
+          type="number"
+          name="cantidad"
+          placeholder="Cantidad a Ordenar (Stock)"
+          value={producto.cantidad}
           onChange={handleChange}
         />
         <button type="submit">Registrar Producto</button>
       </form>
+
       <h3>Productos Registrados</h3>
       <table border="1">
         <thead>
