@@ -72,6 +72,21 @@ input:focus {
   outline: 2px solid #00d4ff;
 }
 
+/* Estilo para el selector (dropdown) */
+.input-estilo {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.input-estilo:focus {
+  outline: 2px solid #00d4ff;
+}
+
 /* Botones */
 button {
   background: #00d4ff;
@@ -86,7 +101,13 @@ button {
 
 button:hover {
   background: #00a8cc;
-  transform: scale(1.05);
+  transform: scale(1.02);
+}
+
+button:disabled {
+  background: #555;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Tablas */
@@ -108,76 +129,7 @@ td {
   border-bottom: 1px solid #333;
 }
 
-/* Listas */
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background: #242424;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-}
-
-/* Panel admin */
-.dashboard-card {
-  background: #242424;
-  padding: 15px;
-  border-radius: 10px;
-  margin-top: 15px;
-  border-left: 5px solid #00d4ff;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  margin-top: 25px;
-}
-
-.stat-card {
-  background: #262626;
-  padding: 25px;
-  border-radius: 12px;
-  text-align: center;
-  transition: 0.3s;
-  border: 1px solid #333;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  border-color: #00d4ff;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-}
-
-.stat-card h3 {
-  color: #00d4ff;
-  margin-bottom: 10px;
-}
-
-.stat-card {
-  text-decoration: none; /* Quita el subrayado */
-  color: #ffffff; /* Mantiene el texto blanco */
-  display: block; /* Hace que todo el bloque sea clickeable */
-}
-
-.input-estilo {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #2a2a2a;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.input-estilo:focus {
-  outline: 2px solid #00d4ff;
-}
-
-/* Estilos para la lista de pedidos */
+/* Listas y Pedidos */
 .lista-pedidos {
   list-style: none;
   padding: 0;
@@ -226,4 +178,43 @@ li {
 .btn-eliminar:hover {
   background: #cc0000;
   transform: scale(1.05);
+}
+
+/* Panel admin y Dashboard */
+.dashboard-card {
+  background: #242424;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  border-left: 5px solid #00d4ff;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 25px;
+}
+
+.stat-card {
+  background: #262626;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  transition: 0.3s;
+  border: 1px solid #333;
+  text-decoration: none;
+  color: #ffffff;
+  display: block;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.stat-card h3 {
+  color: #00d4ff;
+  margin-bottom: 10px;
 }

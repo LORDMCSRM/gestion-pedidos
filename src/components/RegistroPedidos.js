@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 
 function RegistroPedidos() {
-  // Ahora el pedido incluye al usuario
   const [pedido, setPedido] = useState({ usuario: "", producto: "", cantidad: 1 });
   const [pedidos, setPedidos] = useState(() => {
     const guardados = localStorage.getItem("pedidos");
@@ -51,14 +50,13 @@ function RegistroPedidos() {
       return;
     }
 
-    // 1. Restar del inventario
+    // Restar del inventario
     const nuevoInventario = [...inventario];
     nuevoInventario[indexProducto].existencia -= cantidadSolicitada;
     setInventario(nuevoInventario);
     localStorage.setItem("inventario", JSON.stringify(nuevoInventario));
 
-    // 2. Agregar al historial de pedidos
-    // Verificamos si este mismo usuario ya pidió este mismo producto para agruparlo
+    // Agregar al historial de pedidos (agrupando si es el mismo usuario y producto)
     const existeEnPedidos = pedidos.findIndex(
       p => p.usuario === pedido.usuario && p.producto === pedido.producto
     );
@@ -75,11 +73,10 @@ function RegistroPedidos() {
       }]);
     }
 
-    setPedido({ usuario: pedido.usuario, producto: "", cantidad: 1 }); // Mantenemos el usuario seleccionado por comodidad
-    alert(`✅ Pedido procesado para ${pedido.usuario}. Se descontaron ${cantidadSolicitada} unidades de "${pedido.producto}".`);
+    setPedido({ usuario: pedido.usuario, producto: "", cantidad: 1 });
+    alert(`✅ Pedido agregado al carrito de ${pedido.usuario}.`);
   };
 
-  // --- FUNCIONES DE CONTROL (Ajustar y Eliminar) ---
   const restarUnidad = (indexPedido, nombreProducto) => {
     const nuevosPedidos = [...pedidos];
     const pedidoActual = nuevosPedidos[indexPedido];
@@ -118,11 +115,41 @@ function RegistroPedidos() {
     }
   };
 
+  // Calcular el total del carrito
+  const calcularTotal = () => {
+    let total = 0;
+    const productosRegistrados = JSON.parse(localStorage.getItem("productos")) || [];
+    
+    pedidos.forEach(p => {
+      const prodInfo = productosRegistrados.find(pr => pr.nombre === p.producto);
+      const precio = prodInfo ? prodInfo.precio : 0;
+      total += precio * p.cantidad;
+    });
+    return total;
+  };
+
+  const vaciarCarrito = () => {
+    if (window.confirm("¿Estás seguro de que deseas vaciar todo el carrito? El stock volverá al inventario.")) {
+      const nuevoInventario = [...inventario];
+      pedidos.forEach(p => {
+        const idx = nuevoInventario.findIndex(i => i.nombre === p.producto);
+        if (idx !== -1) nuevoInventario[idx].existencia += p.cantidad;
+      });
+      setInventario(nuevoInventario);
+      localStorage.setItem("inventario", JSON.stringify(nuevoInventario));
+      setPedidos([]);
+    }
+  };
+
+  const confirmarCompra = () => {
+    alert(`🎉 ¡Compra confirmada!\n\nTotal pagado: $${calcularTotal()}\n\nLos pedidos han sido procesados con éxito.`);
+    setPedidos([]); // Vaciamos el carrito
+  };
+
   return (
     <div className="card">
       <h2>Registro de Pedidos</h2>
       
-      {/* Si no hay usuarios, mostramos advertencia */}
       {usuarios.length === 0 && (
         <p style={{ color: "#ff4d4d", fontWeight: "bold" }}>
           ⚠️ Debes registrar al menos un usuario antes de crear pedidos.
@@ -130,27 +157,14 @@ function RegistroPedidos() {
       )}
 
       <form onSubmit={registrarPedido}>
-        {/* Selector de Usuario */}
-        <select 
-          name="usuario" 
-          value={pedido.usuario} 
-          onChange={handleChange}
-          className="input-estilo"
-          disabled={usuarios.length === 0}
-        >
+        <select name="usuario" value={pedido.usuario} onChange={handleChange} className="input-estilo" disabled={usuarios.length === 0}>
           <option value="">Selecciona el cliente / usuario</option>
           {usuarios.map((u, index) => (
             <option key={index} value={u.nombre}>{u.nombre}</option>
           ))}
         </select>
 
-        {/* Selector de Producto */}
-        <select 
-          name="producto" 
-          value={pedido.producto} 
-          onChange={handleChange}
-          className="input-estilo"
-        >
+        <select name="producto" value={pedido.producto} onChange={handleChange} className="input-estilo">
           <option value="">Selecciona un producto</option>
           {inventario.map((item, index) => (
             <option key={index} value={item.nombre}>
@@ -159,49 +173,44 @@ function RegistroPedidos() {
           ))}
         </select>
         
-        <input
-          type="number"
-          name="cantidad"
-          placeholder="Cantidad"
-          value={pedido.cantidad}
-          onChange={handleChange}
-          min="1"
-        />
+        <input type="number" name="cantidad" placeholder="Cantidad" value={pedido.cantidad} onChange={handleChange} min="1" />
         
-        <button type="submit" disabled={usuarios.length === 0}>Agregar Pedido</button>
+        <button type="submit" disabled={usuarios.length === 0}>Agregar Pedido al Carrito</button>
       </form>
 
       <h3>Carrito / Lista de Pedidos Actual</h3>
       {pedidos.length === 0 ? (
-        <p>No hay pedidos en la lista.</p>
+        <p>No hay pedidos en el carrito.</p>
       ) : (
         <ul className="lista-pedidos">
           {pedidos.map((p, index) => (
             <li key={index} className="pedido-item">
-              {/* Mostramos el usuario asignado al pedido */}
               <span>
                 <strong style={{ color: "#00d4ff" }}>{p.usuario}</strong> pidió: {p.producto} (x{p.cantidad})
               </span>
-              
               <div className="acciones-pedido">
-                <button 
-                  className="btn-ajustar" 
-                  onClick={() => restarUnidad(index, p.producto)}
-                  title="Quitar 1 unidad"
-                >
-                  -
-                </button>
-                <button 
-                  className="btn-eliminar" 
-                  onClick={() => eliminarPedido(index, p.producto)}
-                  title="Eliminar pedido y devolver stock"
-                >
-                  🗑️ Cancelar
-                </button>
+                <button className="btn-ajustar" onClick={() => restarUnidad(index, p.producto)} title="Quitar 1 unidad">-</button>
+                <button className="btn-eliminar" onClick={() => eliminarPedido(index, p.producto)} title="Eliminar pedido">🗑️</button>
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {pedidos.length > 0 && (
+        <div style={{ marginTop: "20px", padding: "15px", background: "#1a1a1a", borderRadius: "10px", border: "1px solid #00d4ff" }}>
+          <h3 style={{ color: "#00d4ff", marginTop: 0, textAlign: "center" }}>
+            Total a Pagar: ${calcularTotal()}
+          </h3>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button style={{ background: "#4caf50", flex: 1 }} onClick={confirmarCompra}>
+              ✅ Confirmar Compra
+            </button>
+            <button style={{ background: "#ff4d4d", flex: 1 }} onClick={vaciarCarrito}>
+              🗑️ Vaciar Carrito
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
