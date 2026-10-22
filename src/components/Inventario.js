@@ -2,24 +2,14 @@ import React from "react";
 
 function Inventario() {
   const inventario = [
-    {
-      nombre: "Laptop",
-      existencia: 10,
-    },
-    {
-      nombre: "Mouse",
-      existencia: 25,
-    },
-    {
-      nombre: "Teclado",
-      existencia: 15,
-    },
+    { nombre: "Laptop", existencia: 10 },
+    { nombre: "Mouse", existencia: 25 },
+    { nombre: "Teclado", existencia: 15 },
   ];
 
   return (
     <div>
       <h2>Inventario Disponible</h2>
-
       <table border="1">
         <thead>
           <tr>
@@ -27,7 +17,6 @@ function Inventario() {
             <th>Existencia</th>
           </tr>
         </thead>
-
         <tbody>
           {inventario.map((item, index) => (
             <tr key={index}>

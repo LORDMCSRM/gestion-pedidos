@@ -1,7 +1,6 @@
 import React from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-
 import InterfazPrincipal from "./components/InterfazPrincipal";
 import RegistroUsuarios from "./components/RegistroUsuarios";
 import RegistroProductos from "./components/RegistroProductos";
@@ -13,9 +12,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="App">
-
         <h1>Sistema de Gestión de Pedidos</h1>
-
         <nav>
           <Link to="/">Inicio</Link> |{" "}
           <Link to="/usuarios">Usuarios</Link> |{" "}
@@ -24,9 +21,7 @@ function App() {
           <Link to="/inventario">Inventario</Link> |{" "}
           <Link to="/admin">Administración</Link>
         </nav>
-
         <hr />
-
         <Routes>
           <Route path="/" element={<InterfazPrincipal />} />
           <Route path="/usuarios" element={<RegistroUsuarios />} />
@@ -35,7 +30,6 @@ function App() {
           <Route path="/inventario" element={<Inventario />} />
           <Route path="/admin" element={<PanelAdministracion />} />
         </Routes>
-
       </div>
     </BrowserRouter>
   );

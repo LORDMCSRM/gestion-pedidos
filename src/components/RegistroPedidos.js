@@ -6,20 +6,17 @@ function RegistroPedidos() {
 
   const registrarPedido = (e) => {
     e.preventDefault();
-
     if (pedido.trim() === "") {
-      alert("Ingresa un pedido");
+      alert("Ingresa un pedido válido");
       return;
     }
-
     setPedidos([...pedidos, pedido]);
     setPedido("");
   };
 
   return (
-    <div>
+    <div className="card">
       <h2>Registro de Pedidos</h2>
-
       <form onSubmit={registrarPedido}>
         <input
           type="text"
@@ -27,14 +24,9 @@ function RegistroPedidos() {
           value={pedido}
           onChange={(e) => setPedido(e.target.value)}
         />
-
-        <button type="submit">
-          Registrar
-        </button>
+        <button type="submit">Registrar Pedido</button>
       </form>
-
       <h3>Historial de Pedidos</h3>
-
       <ul>
         {pedidos.map((p, index) => (
           <li key={index}>{p}</li>
