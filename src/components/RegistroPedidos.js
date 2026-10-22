@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function RegistroPedidos() {
   const [pedido, setPedido] = useState("");
-  const [pedidos, setPedidos] = useState([]);
+  const [pedidos, setPedidos] = useState(() => {
+    const guardados = localStorage.getItem("pedidos");
+    return guardados ? JSON.parse(guardados) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("pedidos", JSON.stringify(pedidos));
+  }, [pedidos]);
 
   const registrarPedido = (e) => {
     e.preventDefault();

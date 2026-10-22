@@ -1,8 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function RegistroUsuarios() {
+  // 1. Inicializamos el estado leyendo el localStorage
   const [usuario, setUsuario] = useState({ nombre: "", correo: "" });
-  const [usuarios, setUsuarios] = useState([]);
+  const [usuarios, setUsuarios] = useState(() => {
+    const guardados = localStorage.getItem("usuarios");
+    return guardados ? JSON.parse(guardados) : [];
+  });
+
+  // 2. Guardamos en localStorage cada vez que la lista de usuarios cambie
+  useEffect(() => {
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+  }, [usuarios]);
 
   const handleChange = (e) => {
     setUsuario({ ...usuario, [e.target.name]: e.target.value });

@@ -1,8 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function RegistroProductos() {
   const [producto, setProducto] = useState({ nombre: "", precio: "" });
-  const [productos, setProductos] = useState([]);
+  const [productos, setProductos] = useState(() => {
+    const guardados = localStorage.getItem("productos");
+    return guardados ? JSON.parse(guardados) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("productos", JSON.stringify(productos));
+  }, [productos]);
 
   const handleChange = (e) => {
     setProducto({ ...producto, [e.target.name]: e.target.value });
@@ -10,8 +17,9 @@ function RegistroProductos() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!producto.nombre || !producto.precio) {
-      alert("Completa todos los campos");
+    // Validación extra: que el precio sea mayor a 0
+    if (!producto.nombre || !producto.precio || producto.precio <= 0) {
+      alert("Completa todos los campos y asegúrate de que el precio sea mayor a 0");
       return;
     }
     setProductos([...productos, producto]);
