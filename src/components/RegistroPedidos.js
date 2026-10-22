@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from "react";
 
 function RegistroPedidos() {
-  const [pedido, setPedido] = useState({ producto: "", cantidad: 1 });
-  
-  // Los pedidos ahora se guardan como objetos: { producto: "Mouse", cantidad: 2 }
+  // Ahora el pedido incluye al usuario
+  const [pedido, setPedido] = useState({ usuario: "", producto: "", cantidad: 1 });
   const [pedidos, setPedidos] = useState(() => {
     const guardados = localStorage.getItem("pedidos");
     return guardados ? JSON.parse(guardados) : [];
   });
-  
   const [inventario, setInventario] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
 
-  // Cargar inventario al iniciar
+  // Cargar inventario y usuarios al iniciar
   useEffect(() => {
     const inv = JSON.parse(localStorage.getItem("inventario")) || [];
+    const usr = JSON.parse(localStorage.getItem("usuarios")) || [];
     setInventario(inv);
+    setUsuarios(usr);
   }, []);
 
-  // Guardar pedidos en localStorage cada vez que cambien
   useEffect(() => {
     localStorage.setItem("pedidos", JSON.stringify(pedidos));
   }, [pedidos]);
@@ -29,8 +29,8 @@ function RegistroPedidos() {
   const registrarPedido = (e) => {
     e.preventDefault();
     
-    if (!pedido.producto || pedido.cantidad <= 0) {
-      alert("Por favor, selecciona un producto y una cantidad válida.");
+    if (!pedido.usuario || !pedido.producto || pedido.cantidad <= 0) {
+      alert("Por favor, selecciona un usuario, un producto y una cantidad válida.");
       return;
     }
 
@@ -57,26 +57,29 @@ function RegistroPedidos() {
     setInventario(nuevoInventario);
     localStorage.setItem("inventario", JSON.stringify(nuevoInventario));
 
-    // 2. Verificar si el producto ya está en la lista de pedidos actual
-    const existeEnPedidos = pedidos.findIndex(p => p.producto === pedido.producto);
+    // 2. Agregar al historial de pedidos
+    // Verificamos si este mismo usuario ya pidió este mismo producto para agruparlo
+    const existeEnPedidos = pedidos.findIndex(
+      p => p.usuario === pedido.usuario && p.producto === pedido.producto
+    );
     
     if (existeEnPedidos !== -1) {
-      // Si ya existe, le sumamos la cantidad
       const nuevosPedidos = [...pedidos];
       nuevosPedidos[existeEnPedidos].cantidad += cantidadSolicitada;
       setPedidos(nuevosPedidos);
     } else {
-      // Si es nuevo, lo agregamos a la lista
-      setPedidos([...pedidos, { producto: pedido.producto, cantidad: cantidadSolicitada }]);
+      setPedidos([...pedidos, { 
+        usuario: pedido.usuario, 
+        producto: pedido.producto, 
+        cantidad: cantidadSolicitada 
+      }]);
     }
 
-    setPedido({ producto: "", cantidad: 1 });
-    alert(`✅ Pedido procesado con éxito. Se han descontado ${cantidadSolicitada} unidades del inventario.`);
+    setPedido({ usuario: pedido.usuario, producto: "", cantidad: 1 }); // Mantenemos el usuario seleccionado por comodidad
+    alert(`✅ Pedido procesado para ${pedido.usuario}. Se descontaron ${cantidadSolicitada} unidades de "${pedido.producto}".`);
   };
 
   // --- FUNCIONES DE CONTROL (Ajustar y Eliminar) ---
-
-  // Devolver 1 unidad al inventario
   const restarUnidad = (indexPedido, nombreProducto) => {
     const nuevosPedidos = [...pedidos];
     const pedidoActual = nuevosPedidos[indexPedido];
@@ -85,12 +88,10 @@ function RegistroPedidos() {
       pedidoActual.cantidad -= 1;
       setPedidos(nuevosPedidos);
     } else {
-      // Si la cantidad llega a 1 y se resta, se elimina el pedido
       eliminarPedido(indexPedido, nombreProducto);
       return;
     }
 
-    // Devolver al inventario
     const indexInv = inventario.findIndex(p => p.nombre === nombreProducto);
     if (indexInv !== -1) {
       const nuevoInventario = [...inventario];
@@ -100,12 +101,10 @@ function RegistroPedidos() {
     }
   };
 
-  // Eliminar pedido por completo y devolver todo al inventario
   const eliminarPedido = (indexPedido, nombreProducto) => {
     if (window.confirm(`¿Estás seguro de que deseas cancelar el pedido de "${nombreProducto}"? Las unidades volverán al inventario.`)) {
       const pedidoAEliminar = pedidos[indexPedido];
 
-      // Devolver todas las unidades al inventario
       const indexInv = inventario.findIndex(p => p.nombre === nombreProducto);
       if (indexInv !== -1) {
         const nuevoInventario = [...inventario];
@@ -114,7 +113,6 @@ function RegistroPedidos() {
         localStorage.setItem("inventario", JSON.stringify(nuevoInventario));
       }
 
-      // Eliminar de la lista de pedidos
       const nuevosPedidos = pedidos.filter((_, index) => index !== indexPedido);
       setPedidos(nuevosPedidos);
     }
@@ -123,7 +121,30 @@ function RegistroPedidos() {
   return (
     <div className="card">
       <h2>Registro de Pedidos</h2>
+      
+      {/* Si no hay usuarios, mostramos advertencia */}
+      {usuarios.length === 0 && (
+        <p style={{ color: "#ff4d4d", fontWeight: "bold" }}>
+          ⚠️ Debes registrar al menos un usuario antes de crear pedidos.
+        </p>
+      )}
+
       <form onSubmit={registrarPedido}>
+        {/* Selector de Usuario */}
+        <select 
+          name="usuario" 
+          value={pedido.usuario} 
+          onChange={handleChange}
+          className="input-estilo"
+          disabled={usuarios.length === 0}
+        >
+          <option value="">Selecciona el cliente / usuario</option>
+          {usuarios.map((u, index) => (
+            <option key={index} value={u.nombre}>{u.nombre}</option>
+          ))}
+        </select>
+
+        {/* Selector de Producto */}
         <select 
           name="producto" 
           value={pedido.producto} 
@@ -147,7 +168,7 @@ function RegistroPedidos() {
           min="1"
         />
         
-        <button type="submit">Agregar Pedido</button>
+        <button type="submit" disabled={usuarios.length === 0}>Agregar Pedido</button>
       </form>
 
       <h3>Carrito / Lista de Pedidos Actual</h3>
@@ -157,7 +178,10 @@ function RegistroPedidos() {
         <ul className="lista-pedidos">
           {pedidos.map((p, index) => (
             <li key={index} className="pedido-item">
-              <span><strong>{p.producto}</strong> - Cantidad: {p.cantidad}</span>
+              {/* Mostramos el usuario asignado al pedido */}
+              <span>
+                <strong style={{ color: "#00d4ff" }}>{p.usuario}</strong> pidió: {p.producto} (x{p.cantidad})
+              </span>
               
               <div className="acciones-pedido">
                 <button 
