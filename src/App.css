@@ -156,3 +156,9 @@ li {
   color: #00d4ff;
   margin-bottom: 10px;
 }
+
+.stat-card {
+  text-decoration: none; /* Quita el subrayado */
+  color: #ffffff; /* Mantiene el texto blanco */
+  display: block; /* Hace que todo el bloque sea clickeable */
+}
